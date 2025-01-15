@@ -27,6 +27,11 @@
   },
   "homepage": "https://github.com/Avijitbera/neo-type#readme",
   "devDependencies": {
+    "@types/node": "^22.10.6",
     "typescript": "^5.7.3"
+  },
+  "dependencies": {
+    "neo4j-driver": "^5.27.0",
+    "reflect-metadata": "^0.2.2"
   }
 }
