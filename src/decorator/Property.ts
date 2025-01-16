@@ -1,6 +1,6 @@
 import 'reflect-metadata'
 
-const PROPERTY_METADATA_KEY = 'neo:property'
+ const PROPERTY_METADATA_KEY = 'neo:property'
 
 export function Property(options: { required?: boolean; unique?: boolean } = {}) {
     return (target: any, key: string) => {
@@ -10,6 +10,3 @@ export function Property(options: { required?: boolean; unique?: boolean } = {})
     };
   }
 
-export function getPropertyMetadata(target: any, propertyKey: string): any{
-    return Reflect.getMetadata(PROPERTY_METADATA_KEY, target, propertyKey)
-}

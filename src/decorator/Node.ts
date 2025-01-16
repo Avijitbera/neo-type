@@ -1,6 +1,6 @@
 import 'reflect-metadata'
 
-const NODE_METADATA_KEY = 'neo:node'
+  const NODE_METADATA_KEY = 'neo:node'
 
 
 export function Node(label: string) {
@@ -9,6 +9,3 @@ export function Node(label: string) {
     }
 }
 
-export function getNodeLabel(target: any): string {
-    return Reflect.getMetadata(NODE_METADATA_KEY, target)
-}

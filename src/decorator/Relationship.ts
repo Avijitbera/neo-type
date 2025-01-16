@@ -1,5 +1,5 @@
 import 'reflect-metadata';
-export const RELATIONSHIP_METADATA_KEY = 'neo-type:relationship';
+ const RELATIONSHIP_METADATA_KEY = 'neo-type:relationship';
 
 export function Relationship(type: string,
      direction: 'in' | 'out' = 'out',
