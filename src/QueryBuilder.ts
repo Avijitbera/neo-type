@@ -21,4 +21,8 @@ export class QueryBuilder<T extends NodeEntity>{
         .join(', ');
         return `CREATE (${this.label} { ${properties} }) RETURN n`;
     }
+
+    findByIdQuery(id: string, data: Partial<T>):string{
+        return `MATCH (n:${this.label}) WHERE id(n) = $id RETURN n`
+    }
 }
