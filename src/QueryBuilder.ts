@@ -25,4 +25,19 @@ export class QueryBuilder<T extends NodeEntity>{
     findByIdQuery(id: string, data: Partial<T>):string{
         return `MATCH (n:${this.label}) WHERE id(n) = $id RETURN n`
     }
+
+    updateQuery(id: string, data: Partial<T>):string{
+        const properties = this.properties.filter((p) => 
+        data[p.key] !== undefined)
+        .map((p) => `n.${p.key} = $${data[p.key]}`)
+        .join(', ');
+
+        return `MATCH (n:${this.label}) WHERE id(n) = $id SET ${properties} RETURN n`
+    }
+
+    deleteQuery(id:string):string{
+        return `MATCH (n:${this.label}) WHERE id(n) = $id DELETE n`
+
+    }
+
 }
