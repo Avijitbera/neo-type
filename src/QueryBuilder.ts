@@ -40,4 +40,28 @@ export class QueryBuilder<T extends NodeEntity>{
 
     }
 
+    createRelationshipQuery(sourceId:string,
+        targetId:string,
+        relationshipKey:any,
+        properties?:any
+    ): string {
+        const relationship = this.relationships.find((r) => r.key === relationshipKey);
+
+        if(!relationship){
+            throw new Error(`Relationship ${relationshipKey} not found`);
+        }
+        const {type, direction} = relationship;
+        const [sourceNode, targetNode] = direction === 'out' ? ['a', 'b'] : ['b', 'a']
+
+        const relationshipProperties = properties ? Object.entries(properties).map(([key, value]) => `${key}: $${key}`).join(', ') : '';
+
+        return `
+        MATCH (a:${this.label}), (b:${this.label})
+        WHERE id(a) = $sourceId AND id(b) = $targetId
+        CREATE (${sourceNode})-[:${type} {${relationshipProperties}}]->(${targetNode}))
+        RETURN a, b
+        `
+
+    }
+
 }
