@@ -4,7 +4,7 @@ import { NodeEntity } from "./NodeEntity";
 import { QueryBuilder } from "./QueryBuilder";
 
 
-export class EdgetClient {
+export class EdgeClient {
     constructor(private connection: Connection) {
         
     }
@@ -74,6 +74,24 @@ export class EdgetClient {
             await session.close();
         }
     }
+
+    async createRelationship<T extends NodeEntity>(
+        entity: new () => T,
+        sourceId: string,
+        targetId: string,
+        relationshipKey: any,
+        properties?: any,
+      ): Promise<void> {
+          const session = this.getDriver().session();
+          const queryBuilder = new QueryBuilder(entity);
+          const query = queryBuilder.createRelationshipQuery(sourceId, targetId, relationshipKey, properties);
+          try {
+            await session.run(query, { sourceId: parseInt(sourceId, 10), targetId: parseInt(targetId, 10), ...properties });
+          } finally {
+            await session.close();
+          }
+      }
+    
 
 
     private mapRecordToEntity<T extends NodeEntity>(entity: new () => T, record: Record): T {
