@@ -1,6 +1,8 @@
+import { RelationshipSchema } from "./RelationshipSchema";
 
 
 export class NodeSchema<T> {
+  public relationships: Record<string, RelationshipSchema> = {};
     constructor(public label: string,
        public properties: 
        Record<keyof T, string>) {
@@ -11,5 +13,10 @@ export class NodeSchema<T> {
           ...properties,
           id: 'string'
         }
+       }
+
+       addRelationshipe(key:string, relationship: RelationshipSchema) {
+        this.relationships[key] = relationship;
+        return this;
        }
   }
