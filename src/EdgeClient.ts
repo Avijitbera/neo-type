@@ -27,6 +27,24 @@ export class EdgetClient {
 
     }
 
+    async findById<T extends NodeEntity>(
+        entity:new () => T, 
+        id: string,
+    ): Promise<T | null>{
+        const session = this.getDriver().session();
+        const queryBuilder = new QueryBuilder(entity);
+        const query = queryBuilder.findByIdQuery(id, {});
+        try {
+            const result = await session.run(query, { id });
+            if(result.records.length === 0){
+                return null;
+            }
+            return this.mapRecordToEntity(entity, result.records[0]);
+        } finally {
+            await session.close();
+        }
+    }
+
     private mapRecordToEntity<T extends NodeEntity>(entity: new () => T, record: Record): T {
         const node = record.get('n');
         const instance = new entity();
