@@ -45,6 +45,37 @@ export class EdgetClient {
         }
     }
 
+    async update<T extends NodeEntity>(
+        entity:new () => T,
+        id: string,
+        data:Partial<T>,
+    ): Promise<T | null>{
+        const session = this.getDriver().session();
+        const queryBuilder = new QueryBuilder(entity);
+        const query = queryBuilder.updateQuery(id, data);
+        try {
+            const result = await session.run(query, { id: parseInt(id, 10), ...data });
+            if(result.records.length === 0){
+                return null;
+            }
+            return this.mapRecordToEntity(entity, result.records[0]);
+        } finally {
+            await session.close();
+        }
+    }
+
+    async delete<T extends NodeEntity>(entity:new () => T, id: string):Promise<void>{
+        const session = this.getDriver().session();
+        const queryBuilder = new QueryBuilder(entity);
+        const query = queryBuilder.deleteQuery(id);
+        try {
+            await session.run(query, { id: parseInt(id, 10) });
+        } finally {
+            await session.close();
+        }
+    }
+
+
     private mapRecordToEntity<T extends NodeEntity>(entity: new () => T, record: Record): T {
         const node = record.get('n');
         const instance = new entity();
