@@ -16,4 +16,19 @@ export class Connection {
         await this.driver.verifyAuthentication();
         console.log('Connected to Neo4j')
     }
+
+    async disconnect():Promise<void>{
+        if(this.driver){
+            await this.driver.close()
+            this.driver = null
+            console.log('Disconnected from Neo4j')
+        }
+    }
+
+    getDriver():Driver {
+        if(!this.driver){
+            throw new Error('Not connected')
+        }
+        return this.driver
+    }
 }
