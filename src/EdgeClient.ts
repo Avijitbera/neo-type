@@ -2,108 +2,96 @@ import { Driver, Record } from "neo4j-driver";
 import { Connection } from "./Connection";
 import { NodeEntity } from "./NodeEntity";
 import { QueryBuilder } from "./QueryBuilder";
+import { NodeSchema } from "./schema";
 
 
-export class EdgeClient {
-    constructor(private connection: Connection) {
-        
-    }
+export class EdgeClient<T> {
+    constructor(private connection: Connection, private schema: NodeSchema<T>) {}
 
     private getDriver(): Driver {
         return this.connection.getDriver();
     }
 
-    async create<T extends NodeEntity>(entity:new() => T, data:Partial<T>):Promise<T>{
+    async create<T>(data: Partial<T>): Promise<T & { id: string }> {
         const session = this.getDriver().session();
-        const queryBuilder = new QueryBuilder(entity);
+        const queryBuilder = new QueryBuilder(this.schema);
         const query = queryBuilder.createQuery(data);
+    
         try {
-            const result = await session.run(query, data);
-            return this.mapRecordToEntity(entity, result.records[0]);
-
+          const result = await session.run(query, data);
+          return this.mapRecordToEntity(result.records[0]);
         } finally {
-            await session.close();
+          await session.close();
         }
-
-    }
-
-    async findById<T extends NodeEntity>(
-        entity:new () => T, 
-        id: string,
-    ): Promise<T | null>{
-        const session = this.getDriver().session();
-        const queryBuilder = new QueryBuilder(entity);
-        const query = queryBuilder.findByIdQuery(id, {});
-        try {
-            const result = await session.run(query, { id });
-            if(result.records.length === 0){
-                return null;
-            }
-            return this.mapRecordToEntity(entity, result.records[0]);
-        } finally {
-            await session.close();
-        }
-    }
-
-    async update<T extends NodeEntity>(
-        entity:new () => T,
-        id: string,
-        data:Partial<T>,
-    ): Promise<T | null>{
-        const session = this.getDriver().session();
-        const queryBuilder = new QueryBuilder(entity);
-        const query = queryBuilder.updateQuery(id, data);
-        try {
-            const result = await session.run(query, { id: parseInt(id, 10), ...data });
-            if(result.records.length === 0){
-                return null;
-            }
-            return this.mapRecordToEntity(entity, result.records[0]);
-        } finally {
-            await session.close();
-        }
-    }
-
-    async delete<T extends NodeEntity>(entity:new () => T, id: string):Promise<void>{
-        const session = this.getDriver().session();
-        const queryBuilder = new QueryBuilder(entity);
-        const query = queryBuilder.deleteQuery(id);
-        try {
-            await session.run(query, { id: parseInt(id, 10) });
-        } finally {
-            await session.close();
-        }
-    }
-
-    async createRelationship<T extends NodeEntity>(
-        entity: new () => T,
-        sourceId: string,
-        targetId: string,
-        relationshipKey: any,
-        properties?: any,
-      ): Promise<void> {
-          const session = this.getDriver().session();
-          const queryBuilder = new QueryBuilder(entity);
-          const query = queryBuilder.createRelationshipQuery(sourceId, targetId, relationshipKey, properties);
-          try {
-            await session.run(query, { sourceId: parseInt(sourceId, 10), targetId: parseInt(targetId, 10), ...properties });
-          } finally {
-            await session.close();
-          }
       }
+
+      async findById(id: string): Promise<(T & { id: string }) | null> {
+        const session = this.getDriver().session();
+        const queryBuilder = new QueryBuilder(this.schema);
+        const query = queryBuilder.findByIdQuery(id);
+    
+        try {
+          const result = await session.run(query, { id: parseInt(id, 10) });
+          if (result.records.length === 0) return null;
+          return this.mapRecordToEntity(result.records[0]);
+        } finally {
+          await session.close();
+        }
+      }
+
+      async update(id: string, data: Partial<T>): Promise<(T & { id: string }) | null> {
+        const session = this.getDriver().session();
+        const queryBuilder = new QueryBuilder(this.schema);
+        const query = queryBuilder.updateQuery(id, data);
+    
+        try {
+          const result = await session.run(query, { id: parseInt(id, 10), ...data });
+          if (result.records.length === 0) return null;
+          return this.mapRecordToEntity(result.records[0]);
+        } finally {
+          await session.close();
+        }
+      }
+
+      async delete(id: string): Promise<void> {
+        const session = this.getDriver().session();
+        const queryBuilder = new QueryBuilder(this.schema);
+        const query = queryBuilder.deleteQuery(id);
+    
+        try {
+          await session.run(query, { id: parseInt(id, 10) });
+        } finally {
+          await session.close();
+        }
+      }
+
+    //   async createRelationship(
+    //     sourceId: string,
+    //     targetId: string,
+    //     relationship: RelationshipSchema,
+    //   ): Promise<void> {
+    //     const session = this.getDriver().session();
+    //     const queryBuilder = new QueryBuilder(this.schema);
+    //     const query = queryBuilder.createRelationshipQuery(sourceId, targetId, relationship);
+    
+    //     try {
+    //       await session.run(query, { sourceId: parseInt(sourceId, 10), targetId: parseInt(targetId, 10), ...relationship.properties });
+    //     } finally {
+    //       await session.close();
+    //     }
+    //   }
     
 
 
-    private mapRecordToEntity<T extends NodeEntity>(entity: new () => T, record: Record): T {
+      private mapRecordToEntity<T>(record: Record): T & { id: string } {
         const node = record.get('n');
-        const instance = new entity();
-      
+        const entity: any = {};
+    
         Object.keys(node.properties).forEach((key) => {
-          // Use type assertion to allow dynamic property assignment
-          (instance as any)[key] = node.properties[key];
+          entity[key] = node.properties[key];
         });
-      
-        instance.id = node.identity.toString();
-        return instance;
+    
+        entity.id = node.identity.toString();
+        return entity;
       }
 }

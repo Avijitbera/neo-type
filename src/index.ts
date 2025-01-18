@@ -1,4 +1,4 @@
-export * from './decorator/Index'
+export * from './schema'
 export * from './Connection'
 export * from './EdgeClient'
 export * from './NodeEntity'

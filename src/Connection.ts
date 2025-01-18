@@ -8,11 +8,14 @@ export class Connection {
     }
 
     async connect():Promise<void>{
-        if(!this.driver){
+        if(this.driver){
             throw new Error('Already connected')
         }
 
         this.driver = createDriver(this.uri, auth.basic(this.user, this.password))
+        console.log(this.uri)
+        console.log(this.user)
+        console.log(this.password)
         await this.driver.verifyAuthentication();
         console.log('Connected to Neo4j')
     }
