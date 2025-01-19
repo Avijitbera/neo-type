@@ -8,11 +8,11 @@ import {NodeSchema,
 import dotenv from 'dotenv'
 dotenv.config()
 
-interface User{
-    // id?:string;
-    name:string;
-    age:number;
-}
+interface User extends NodeEntity {
+    name: string;
+    age: number;
+    image: Uint8Array;
+  }
 
 interface FriendsWithProperties {
     since: string;
@@ -21,17 +21,19 @@ interface FriendsWithProperties {
 const userSchema = new NodeSchema<User>(
     'User',
     {
-        age:'number',
-        name:'string',
+        age:{type:'number',},
+        
+        
+        
         // id:'string'
     }
-).addRelationshipe('friends', new RelationshipSchema<FriendsWithProperties>('friends', 'out', {since:'string'}))
-
+).addRelationship('friends', new RelationshipSchema<FriendsWithProperties>('friends', 'out', {since:'string'}))
 
 const main = async() =>{
     const host = process.env.NEO_HOST
     const user = process.env.NEO_USER
     const password = process.env.NEO_PASSWORD
+    
 
     const connection = new Connection(host!, user!, password!)
     await connection.connect()
