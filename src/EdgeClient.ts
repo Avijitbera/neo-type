@@ -65,6 +65,28 @@ export class EdgeClient<T> {
         }
       }
 
+      async createRelationship<R>(
+        sourceId: string,
+        targetId: string,
+        relationshipKey: string,
+        properties?: R,
+      ): Promise<void> {
+        const session = this.getDriver().session();
+        const relationship = this.schema.relationships[relationshipKey];
+        if (!relationship) {
+          throw new Error(`Relationship ${relationshipKey} not found.`);
+        }
+    
+        const queryBuilder = new QueryBuilder(this.schema);
+        const query = queryBuilder.createRelationshipQuery(sourceId, targetId, relationship, properties);
+    
+        try {
+          await session.run(query, { sourceId: parseInt(sourceId, 10), targetId: parseInt(targetId, 10), ...properties });
+        } finally {
+          await session.close();
+        }
+      }
+
     //   async createRelationship(
     //     sourceId: string,
     //     targetId: string,

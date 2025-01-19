@@ -1,8 +1,8 @@
 
-export class RelationshipSchema {
+export class RelationshipSchema<R = {}> {
     constructor(
-        public type: string,
-        public direction: 'in' | 'out',
-        public properties?: Record<string, any>
-    ){}
-}
+      public type: string, // Relationship type (e.g., "FRIENDS_WITH")
+      public direction: 'in' | 'out', // Direction of the relationship
+      public properties?: R, // Optional properties for the relationship
+    ) {}
+  }

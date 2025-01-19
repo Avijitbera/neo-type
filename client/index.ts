@@ -14,6 +14,10 @@ interface User{
     age:number;
 }
 
+interface FriendsWithProperties {
+    since: string;
+}
+
 const userSchema = new NodeSchema<User>(
     'User',
     {
@@ -21,10 +25,8 @@ const userSchema = new NodeSchema<User>(
         name:'string',
         // id:'string'
     }
-)
-const friendsRelationship = new RelationshipSchema('FRIENDS_WITH', 'out', {
-    since: 'string',
-  });
+).addRelationshipe('friends', new RelationshipSchema<FriendsWithProperties>('friends', 'out', {since:'string'}))
+
 
 const main = async() =>{
     const host = process.env.NEO_HOST
@@ -38,15 +40,12 @@ const main = async() =>{
 
 
     
-   const user1 = await edgeClient.create<User>({
-    age: 20,
-    name: 'John Doe'
-   })
-console.log('Created User:', user1);
-   const foundUser = await edgeClient.findById(user1.id!);
-  console.log('Found User:', foundUser);
-
-   
+    const user1 = await edgeClient.create({ name: 'Alice', age: 25 });
+    const user2 = await edgeClient.create({ name: 'Bob', age: 30 });
+  
+    // Create a relationship with properties
+    await edgeClient.createRelationship<FriendsWithProperties>(user1.id!, user2.id!, 'friends', {since:"2022-01-01"});
+  
     await connection.disconnect()
 
 }

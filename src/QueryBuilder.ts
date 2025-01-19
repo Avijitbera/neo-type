@@ -32,16 +32,17 @@ export class QueryBuilder<T extends NodeEntity>{
         return `MATCH (n:${this.schema.label}) WHERE id(n) = $id DELETE n`;
       }
 
-      createRelationshipQuery(
+      createRelationshipQuery<R>(
         sourceId: string,
         targetId: string,
-        relationship: RelationshipSchema,
+        relationship: RelationshipSchema<R>,
+        properties?: R,
       ): string {
         const [sourceNode, targetNode] =
           relationship.direction === 'out' ? ['a', 'b'] : ['b', 'a'];
     
-        const relationshipProperties = relationship.properties
-          ? Object.keys(relationship.properties)
+        const relationshipProperties = properties
+          ? Object.keys(properties)
               .map((key) => `${key}: $${key}`)
               .join(', ')
           : '';
